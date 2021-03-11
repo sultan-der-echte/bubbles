@@ -170,17 +170,48 @@ var agecatCenters = { // Center locations of the bubbles.
     // Fünfter Button: protect (Schutzmechanismen)   
  
 var protectCenters = { // Center locations of the bubbles.
-    0: { x: 320, y: height / 2 },
-    1: { x: 600, y: height / 2 }
+    '0': { x: 350, y: height / 2 },
+    '1': { x: 650, y: height / 2 }
   };
 
   var protectTitleX = { // X locations of the year titles.
-    
-    'Ja': 250,
-    'Nein': 600
+    '"Nutzt Sicherheitsmassnahmen wie Adblocker, VPN und andere"': 500, 
+    'Ja': 300,
+    'Nein': 670
   };
     
+     var protectTitleY = {  // Y locations of the year titles.
+    '"Nutzt Sicherheitsmassnahmen wie Adblocker, VPN und andere"': 35, 
+    'Ja': 70,
+    'Nein': 70
+   };
     
+    // Vierter Button: Sorgenbarometer
+    
+    
+  var cookiesCenters = { // Center locations of the bubbles. 
+    '1': { x: 220, y: height / 2  },
+    '2': { x: 420, y: height / 2  },
+    '3': { x: 600, y: height / 2  },
+    '4': { x: 800, y: height / 2  }
+  
+  };
+
+  var cookiesTitleX = {  // X locations of the year titles.
+    '"Ich lösche meine Cookies regelmässig."': 500,
+    'Stimmt ganz': 150,
+    'Stimmt eher': 350, 
+    'Stimmt eher nicht': 600, 
+    'Stimmt nicht': 850
+  };
+    
+  var cookiesTitleY = {  // Y locations of the year titles.
+    '"Ich lösche meine Cookies regelmässig."': 35, 
+    'Stimmt ganz': 70,
+    'Stimmt eher': 70, 
+    'Stimmt eher nicht': 70, 
+    'Stimmt nicht': 70
+  };  
 //* ------------------------------------------------------------------
 //
 // Teil 4 - Datenmanipulation (csv into JS)
@@ -255,6 +286,10 @@ var protectCenters = { // Center locations of the bubbles.
         concerntext: d.sorgen,
           
         protect: d.schutzmechanismen,  
+          
+          
+          cookies: d.cookiescat,
+          cookiestext: d.cookies,
           
           
         x: Math.random() * 900,
@@ -353,6 +388,7 @@ var protectCenters = { // Center locations of the bubbles.
     hideScreentime();
     hideConcern(); 
     hideProtect();
+    hideCookies();
     
     force.on('tick', function (e) {
       bubbles.each(moveToCenter(e.alpha))
@@ -395,6 +431,7 @@ Die Positionierung basiert auf dem alpha Parameter des force layouts und wird kl
     hideConcern();
     hideScreentime();
     hideProtect();
+    hideCookies();
 
     force.on('tick', function (e) {
       bubbles.each(moveToAgecat(e.alpha))
@@ -443,6 +480,7 @@ function moveToAgecat(alpha) {
     hideConcern();
     hideScreentime();
       hideProtect();
+    hideCookies();
 
     force.on('tick', function (e) {
       bubbles.each(moveToSex(e.alpha))
@@ -491,6 +529,7 @@ function moveToAgecat(alpha) {
     hideAgecat();
     hideConcern();
     hideProtect();
+      hideCookies();
 
     force.on('tick', function (e) {
       bubbles.each(moveToScreentime(e.alpha))
@@ -540,6 +579,7 @@ function moveToAgecat(alpha) {
     hideAgecat();
     hideScreentime();
     hideProtect();
+      hideCookies();
 
     force.on('tick', function (e) {
       bubbles.each(moveToConcern(e.alpha))
@@ -589,6 +629,7 @@ function moveToAgecat(alpha) {
     hideSex();
     hideConcern();
     hideScreentime();
+    hideCookies();
 
     force.on('tick', function (e) {
       bubbles.each(moveToProtect(e.alpha))
@@ -620,10 +661,61 @@ function moveToProtect(alpha) {
     protect.enter().append('text')
       .attr('class', 'protect')
       .attr('x', function (d) { return protectTitleX[d]; })
-      .attr('y', 65)
+      .attr('y', function (d) { return protectTitleY[d]; })
       .attr('text-anchor', 'middle')
       .text(function (d) { return d; });
     }
+    
+    
+    //* ------------------------------------------------------------------
+//
+// Cookies
+//
+// -----------------------------------------------------------------*/
+    
+  function splitBubblesintoCookies() {
+    showCookies();
+    hideSex();
+    hideAgecat();
+    hideScreentime();
+    hideProtect();
+    hideConcern();
+
+    force.on('tick', function (e) {
+      bubbles.each(moveToCookies(e.alpha))
+        .attr('cx', function (d) { return d.x; })
+        .attr('cy', function (d) { return d.y; });
+    });
+
+    force.start();
+  }
+
+  function moveToCookies(alpha) {
+    return function (d) {
+      var target = cookiesCenters[d.cookies];
+      d.x = d.x + (target.x - d.x) * damper * alpha * 1.1;
+      d.y = d.y + (target.y - d.y) * damper * alpha * 1.1;
+    };
+  }
+
+  function hideCookies() {
+    svg.selectAll('.cookies').remove();
+  }
+
+  function showCookies() {
+
+    var cookiesData = d3.keys(cookiesTitleX);
+    var cookies = svg.selectAll('.cookies')
+      .data(cookiesData);
+
+    cookies.enter().append('text')
+      .attr('class', 'cookies')
+      .attr('x', function (d) { return cookiesTitleX[d]; })
+      .attr('y', function (d) { return cookiesTitleY[d]; })
+      .attr('text-anchor', 'middle')
+      .text(function (d) { return d; });
+    }
+
     
 //* ------------------------------------------------------------------
 //
@@ -652,6 +744,8 @@ function moveToProtect(alpha) {
       splitBubblesintoScreentime();
          } else if (displayName === 'protect') {
       splitBubblesintoProtect();
+                  } else if (displayName === 'cookies') {
+      splitBubblesintoCookies();
     } else {
       groupBubbles();
     }
@@ -703,6 +797,10 @@ function moveToProtect(alpha) {
                   '</span>';
                 '<span class="name">"Benutzt Schutzmechanismen wie Adblocke, VPN:": </span><span class="value">' +
                   d.age +
+                    '</span>';
+       '<span class="name">"Ich lösche meine Cookies regelmässig.:": </span><span class="value">' +
+                  d.cookiestext +
+                    '</span>';
     tooltip2.showtooltip2(content, d3.event);
   }
 
