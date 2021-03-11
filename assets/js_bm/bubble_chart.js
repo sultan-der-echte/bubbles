@@ -85,38 +85,38 @@ function bubbleChart() {
 // Erster Button: agecat (Alterskategorie)   
  
 var agecatCenters = { // Center locations of the bubbles.
-    1: { x: 150, y: height / 2 },
-    2: { x: 300, y: height / 2 },
-    3: { x: 470, y: height / 2 },
-    4: { x: 600, y: height / 2 },
-    5: { x: 750, y: height / 2 },
-    6: { x: 900, y: height / 2 }
+    1: { x: 100, y: height / 2 },
+    2: { x: 280, y: height / 2 },
+    3: { x: 450, y: height / 2 },
+    4: { x: 580, y: height / 2 },
+    5: { x: 720, y: height / 2 },
+    6: { x: 830, y: height / 2 }
   };
 
   var agecatTitleX = { // X locations of the year titles.
-    'Bis 14 Jahre': 100,
-    '14-15': 250,
-    '16-17': 450,
-    '18-19': 650,
-    '20-29': 800,
-    'Älter als 30 Jahre': 950
+    
+    '14 - 15 Jahre': 200,
+    '16 - 17 Jahre': 450,
+    '18 - 19 Jahre': 650,
+    '20 - 29 Jahre': 780,
+    'Älter als 30 Jahre': 920
   };
     
     
 // Zweiter Button: Geschlecht
     
   var sexCenters = { // Center locations of the bubbles. 
-    'Maennlich': { x: 220, y: height / 2  },
-    'Weiblich': { x: 420, y: height / 2  },
-    'Non-Binaer': { x: 600, y: height / 2  }
+    'Maennlich': { x: 250, y: height / 2  },
+    'Weiblich': { x: 500, y: height / 2  },
+    'Non-Binaer': { x: 750, y: height / 2  }
     
   };
 
   var sexTitleX = {  // X locations of the year titles.
-    'Männer': 150,
-    'Frauen': 450,
-    'Nichtbinär': 650,
-    'Keine Antwort': 850
+    'Männer': 170,
+    'Frauen': 530,
+    'Nichtbinär': 800,
+    
   };
 
 
@@ -167,6 +167,18 @@ var agecatCenters = { // Center locations of the bubbles.
     'Stimmt nicht': 70
   };  
     
+    // Fünfter Button: protect (Schutzmechanismen)   
+ 
+var protectCenters = { // Center locations of the bubbles.
+    0: { x: 320, y: height / 2 },
+    1: { x: 600, y: height / 2 }
+  };
+
+  var protectTitleX = { // X locations of the year titles.
+    
+    'Ja': 250,
+    'Nein': 600
+  };
     
     
 //* ------------------------------------------------------------------
@@ -220,6 +232,11 @@ var agecatCenters = { // Center locations of the bubbles.
 // -----------------------------------------------------------------*/      
       
       
+      
+      
+      
+      
+      
     var myNodes = rawData.map(function (d) {
       return {
           
@@ -231,10 +248,14 @@ var agecatCenters = { // Center locations of the bubbles.
         age: d.alter,
         agecat: d.kategoriealter,
           
+          
         sex: d.geschlecht,
           
         concern: d.sorgenkat,  
         concerntext: d.sorgen,
+          
+        protect: d.schutzmechanismen,  
+          
           
         x: Math.random() * 900,
         y: Math.random() * 800
@@ -330,7 +351,8 @@ var agecatCenters = { // Center locations of the bubbles.
     hideAgecat();
     hideSex();
     hideScreentime();
-    hideConcern();  
+    hideConcern(); 
+    hideProtect();
     
     force.on('tick', function (e) {
       bubbles.each(moveToCenter(e.alpha))
@@ -372,6 +394,7 @@ Die Positionierung basiert auf dem alpha Parameter des force layouts und wird kl
     hideSex();
     hideConcern();
     hideScreentime();
+    hideProtect();
 
     force.on('tick', function (e) {
       bubbles.each(moveToAgecat(e.alpha))
@@ -419,6 +442,7 @@ function moveToAgecat(alpha) {
     hideAgecat();
     hideConcern();
     hideScreentime();
+      hideProtect();
 
     force.on('tick', function (e) {
       bubbles.each(moveToSex(e.alpha))
@@ -466,6 +490,7 @@ function moveToAgecat(alpha) {
     hideSex();
     hideAgecat();
     hideConcern();
+    hideProtect();
 
     force.on('tick', function (e) {
       bubbles.each(moveToScreentime(e.alpha))
@@ -514,6 +539,7 @@ function moveToAgecat(alpha) {
     hideSex();
     hideAgecat();
     hideScreentime();
+    hideProtect();
 
     force.on('tick', function (e) {
       bubbles.each(moveToConcern(e.alpha))
@@ -553,6 +579,54 @@ function moveToAgecat(alpha) {
     
 //* ------------------------------------------------------------------
 //
+// Schutzmechanismen / Protection 
+//
+// -----------------------------------------------------------------*/
+ 
+ function splitBubblesintoProtect() {
+     hideAgecat();
+      showProtect();
+    hideSex();
+    hideConcern();
+    hideScreentime();
+
+    force.on('tick', function (e) {
+      bubbles.each(moveToProtect(e.alpha))
+        .attr('cx', function (d) { return d.x; })
+        .attr('cy', function (d) { return d.y; });
+    });
+
+    force.start();
+  }
+    
+function moveToProtect(alpha) {
+    return function (d) {
+      var target = protectCenters[d.protect];
+      d.x = d.x + (target.x - d.x) * damper * alpha * 1.1;
+      d.y = d.y + (target.y - d.y) * damper * alpha * 1.1;
+    };
+  }
+
+  function hideProtect() {
+    svg.selectAll('.protect').remove();
+  }
+
+  function showProtect() {
+
+    var protectData = d3.keys(protectTitleX);
+    var protect = svg.selectAll('.protect')
+      .data(protectData);
+
+    protect.enter().append('text')
+      .attr('class', 'protect')
+      .attr('x', function (d) { return protectTitleX[d]; })
+      .attr('y', 65)
+      .attr('text-anchor', 'middle')
+      .text(function (d) { return d; });
+    }
+    
+//* ------------------------------------------------------------------
+//
 // WISSENSCHAFTSWOCHE F
 //
 // Wechselfunktion anpassen. Wenn Sie neue Ansichtne hinzufügen, dann unten einen "else if"-Block kopieren und anpassen. 
@@ -576,6 +650,8 @@ function moveToAgecat(alpha) {
       splitBubblesintoConcern();
     } else if (displayName === 'screentime') {
       splitBubblesintoScreentime();
+         } else if (displayName === 'protect') {
+      splitBubblesintoProtect();
     } else {
       groupBubbles();
     }
@@ -606,7 +682,7 @@ function moveToAgecat(alpha) {
 
   var fillColor = d3.scale.ordinal()
     .domain(['1','2','3', '4','5','6'])
-    .range(['#fefcfb', '#ffffff', '#88b0e7', '#2c7cdd','#31485e','#0a0a0a']);
+    .range(['#F7CAD0', '#ADE8F4', '#48CAE4', '#0096C7','#023E8A','#03045E']);
 
   /* Tooltip-Funktion*/
   function showDetail(d) {
@@ -625,6 +701,8 @@ function moveToAgecat(alpha) {
                   '<span class="name">"Ich mache mir Sorgen um meine Daten": </span><span class="value">' +
                   d.concerntext +
                   '</span>';
+                '<span class="name">"Benutzt Schutzmechanismen wie Adblocke, VPN:": </span><span class="value">' +
+                  d.age +
     tooltip2.showtooltip2(content, d3.event);
   }
 
